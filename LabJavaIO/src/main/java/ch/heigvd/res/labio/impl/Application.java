@@ -7,10 +7,8 @@ import ch.heigvd.res.labio.interfaces.IFileExplorer;
 import ch.heigvd.res.labio.interfaces.IFileVisitor;
 import ch.heigvd.res.labio.quotes.QuoteClient;
 import ch.heigvd.res.labio.quotes.Quote;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
+
+import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
@@ -90,6 +88,8 @@ public class Application implements IApplication {
        * one method provided by this class, which is responsible for storing the content of the
        * quote in a text file (and for generating the directories based on the tags).
        */
+      this.storeQuote(quote, "quote-" + (i+1) + ".utf8");
+
       LOG.info("Received a new joke with " + quote.getTags().size() + " tags.");
       for (String tag : quote.getTags()) {
         LOG.info("> " + tag);
@@ -123,7 +123,32 @@ public class Application implements IApplication {
    * @throws IOException 
    */
   void storeQuote(Quote quote, String filename) throws IOException {
-    throw new UnsupportedOperationException("The student has not implemented this method yet.");
+    // create subfolders and file from tags
+    String path = WORKSPACE_DIRECTORY;
+
+    for (String tag : quote.getTags()) {
+        path += '/' + tag;
+    }
+
+    path += '/' + filename;
+
+    File f = new File(path);
+
+    f.getParentFile().mkdirs(); // create the files and parents nonexistants directories
+    f.createNewFile();
+
+    // store content of the quote
+    OutputStream os = new BufferedOutputStream(new FileOutputStream(path));
+
+    byte[] q = quote.getQuote().getBytes("UTF-8");
+    long numberOfBytes = q.length;
+
+    for(int i = 0; i < numberOfBytes; ++i) {
+      os.write(q);
+    }
+
+    // close the output stream
+    os.close();
   }
   
   /**
@@ -140,6 +165,12 @@ public class Application implements IApplication {
          * of the the IFileVisitor interface inline. You just have to add the body of the visit method, which should
          * be pretty easy (we want to write the filename, including the path, to the writer passed in argument).
          */
+        try {
+          writer.write(file.getPath() + file.getName());
+        } catch(IOException ex) {
+          LOG.log(Level.SEVERE, "Could not fetch quotes. {0}", ex.getMessage());
+          ex.printStackTrace();
+        }
       }
     });
   }
