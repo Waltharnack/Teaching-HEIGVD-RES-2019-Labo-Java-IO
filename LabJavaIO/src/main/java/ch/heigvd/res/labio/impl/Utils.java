@@ -1,5 +1,7 @@
 package ch.heigvd.res.labio.impl;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 /**
@@ -20,7 +22,25 @@ public class Utils {
    * contain any line separator, then the first element is an empty string.
    */
   public static String[] getNextLine(String lines) {
-    throw new UnsupportedOperationException("The student has not implemented this method yet.");
+    String[] result = new String[2];
+
+    String WindowsLR = "\r\n";
+    String MacLR = "\r";
+    String UnixLR = "\n";
+    String delimiter = "";
+
+    if(lines.contains(WindowsLR)) {
+      delimiter = WindowsLR;
+    } else if(lines.contains(MacLR)) {
+      delimiter = MacLR;
+      } else if(lines.contains(UnixLR)) {
+      delimiter = UnixLR;
+    }
+
+    result[0] = lines.substring(0, lines.indexOf(delimiter)+delimiter.length());
+    result[1] = lines.substring(lines.indexOf(delimiter)+delimiter.length(), lines.length());
+
+    return result;
   }
 
 }
