@@ -1,8 +1,8 @@
 package ch.heigvd.res.labio.impl.filters;
 
-import java.io.FilterWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 /**
@@ -18,6 +18,9 @@ import java.util.logging.Logger;
 public class FileNumberingFilterWriter extends FilterWriter {
 
   private static final Logger LOG = Logger.getLogger(FileNumberingFilterWriter.class.getName());
+  private char lastChar;
+  private int lineNumber = 1;
+  private boolean isNewLine = true;
 
   public FileNumberingFilterWriter(Writer out) {
     super(out);
@@ -25,17 +28,48 @@ public class FileNumberingFilterWriter extends FilterWriter {
 
   @Override
   public void write(String str, int off, int len) throws IOException {
-    throw new UnsupportedOperationException("The student has not implemented this method yet.");
+    for(int i = 0; i < len; ++i) {
+      if(off + i > str.length()) {
+        break;
+      }
+
+      write(str.charAt(off + i));
+    }
   }
 
   @Override
   public void write(char[] cbuf, int off, int len) throws IOException {
-    throw new UnsupportedOperationException("The student has not implemented this method yet.");
+    write(String.valueOf(cbuf), off, len);
   }
 
   @Override
   public void write(int c) throws IOException {
-    throw new UnsupportedOperationException("The student has not implemented this method yet.");
+    char currentChar = (char) c;
+
+    if(isNewLine) {
+      out.write(String.valueOf(lineNumber++) + '\t');
+      isNewLine = false;
+    }
+
+    if (currentChar == '\n') {
+      if (lastChar == '\r') {
+        out.write("\r\n");
+      } else {
+        out.write("\n");
+      }
+
+      out.write(String.valueOf(lineNumber++) + '\t');
+    } else if (currentChar != '\r') {
+      if(lastChar == '\r') {
+        out.write('\r');
+        out.write(String.valueOf(lineNumber++) + '\t');
+      }
+
+      out.write(currentChar);
+    }
+
+
+    lastChar = currentChar;
   }
 
 }
